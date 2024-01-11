@@ -1,0 +1,75 @@
+version: '3.8'
+
+services:
+
+  ngrok:
+    image: ngrok/ngrok:latest
+    environment:
+      - NGROK_AUTHTOKEN=2amcErRGv6p6Z1vUXTDaksKcuPh_2T34T7TBg7SihtYm9iQN5
+    command: 'http load-balancer:80'
+    ports:
+      - '4040:4040'
+    expose:
+      - '4040'
+    depends_on:
+      - load-balancer
+    networks:
+      - lb_network
+
+  load-balancer:
+    build: openresty
+    ports:
+      - '80:80'
+    volumes:
+      - ./openresty/conf:/usr/local/openresty/nginx/conf
+      - ./openresty/script/active_health_checks.lua:/usr/local/openresty/nginx/active_health_checks.lua
+      - ./openresty/maxmind:/usr/local/openresty/nginx/maxmind/
+    depends_on:
+      - uk-server
+      - us-server1
+      - us-server2
+      - rest-world-server
+      - backup
+    networks:
+      - lb_network
+
+  uk-server:
+    image: nginx:latest
+    networks:
+      lb_network:
+        ipv4_address: 172.19.0.2
+
+  us-server1:
+    image: nginx:latest
+    networks:
+      lb_network:
+        ipv4_address: 172.19.0.3
+
+  us-server2:
+    image: nginx:latest
+    networks:
+      lb_network:
+        ipv4_address: 172.19.0.4
+
+  rest-world-server:
+    image: nginx:latest
+    networks:
+      lb_network:
+        ipv4_address: 172.19.0.5
+
+  backup:
+    image: nginx:latest
+    networks:
+      lb_network:
+        ipv4_address: 172.19.0.6
+
+
+networks:
+  lb_network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.19.0.0/16
+
+
+
