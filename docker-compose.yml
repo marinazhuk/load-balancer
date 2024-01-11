@@ -5,7 +5,7 @@ services:
   ngrok:
     image: ngrok/ngrok:latest
     environment:
-      - NGROK_AUTHTOKEN=2amcErRGv6p6Z1vUXTDaksKcuPh_2T34T7TBg7SihtYm9iQN5
+      - NGROK_AUTHTOKEN=1234
     command: 'http load-balancer:80'
     ports:
       - '4040:4040'
